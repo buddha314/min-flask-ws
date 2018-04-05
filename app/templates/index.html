@@ -4,9 +4,9 @@
 		<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 		<meta content="utf-8" http-equiv="encoding">
 
-		<script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+	<script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
  	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
-   <script type="text/javascript" charset="utf-8">
+  <script type="text/javascript" charset="utf-8">
 		 $(document).ready(function() {
  	  namespace = '/test';
      var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
@@ -26,6 +26,19 @@
  		  socket.emit('my_broadcast_event', {data: $('#broadcast_data').val()});
  		  return false;
  		});
+
+		$('form#runnumbers').submit(function(event) {
+			console.log("running numbers");
+			socket.emit('the_ponies', {data: 'dunno'});
+			return false;
+		});
+
+		socket.on('pony_update', function(msg){
+			console.log("pony update");
+			console.log(msg);
+			$('#ponies').html(msg.data);
+		});
+
 	});
  </script>
 
@@ -37,8 +50,15 @@
 	<form id="broadcast" method="POST" action='#'>
 		<input type="text" name="broadcast_data" id="broadcast_data" placeholder="Message">
 		<input type="submit" value="Broadcast">
-</form>
+  </form>
+
+	<form id="runnumbers" method="POST" action='#'>
+		<input type="text" name="broadcast_data" id="broadcast_data" placeholder="Message">
+		<input type="submit" value="Broadcast">
+	</form>
+
 </div>
 <div id="log"></div>
 	</body>
+	<div id="ponies"></div>
 </html>

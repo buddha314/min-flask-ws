@@ -1,12 +1,15 @@
 from threading import Lock
 from flask import Flask, render_template, session, request
 from flask_socketio import SocketIO, emit
+import random
+import time
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
 thread = None
+pony_thread = None
 thread_lock = Lock()
 
 def background_thread():
@@ -17,6 +20,13 @@ def background_thread():
         count += 1
         socketio.emit('my_response',
                       {'data': 'Server generated event', 'count': count}, namespace='/test')
+
+def update_ponies():
+    for i in range(5):
+        socketio.sleep(1)
+        x = random.random()
+        print("i is %s" % x)
+        socketio.emit('pony_update', {'data': x}, namespace='/test')
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -45,6 +55,13 @@ def test_broadcast_message(message):
     emit('my_response',
          {'data': message['data'], 'count': session['receive_count']}, broadcast=True)
 
+@socketio.on('the_ponies', namespace='/test')
+def run_numbers(message):
+    global pony_thread
+    with thread_lock:
+        if pony_thread is None:
+            print("starting back_work")
+            pony_thread = socketio.start_background_task(target=update_ponies)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
